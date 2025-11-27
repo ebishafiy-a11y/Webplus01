@@ -1565,5 +1565,588 @@
       }, 2000);
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a553a89f3d95bac',t:'MTc2NDI4NDI4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<!doctype html>
+<html lang="fa" dir="rtl">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ویرایشگر شناور</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Vazir', 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      overflow: hidden;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    /* دکمه شناور */
+    #floatingBtn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(245, 87, 108, 0.4);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #floatingBtn:hover {
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 12px 32px rgba(245, 87, 108, 0.6);
+    }
+
+    #floatingBtn:active {
+      transform: scale(0.95);
+    }
+
+    /* پنل ویرایشگر */
+    #editorPanel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80%;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      overflow-y: auto;
+      display: none;
+    }
+
+    #editorPanel.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      display: block;
+    }
+
+    /* هدر پنل */
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .editor-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin: 0;
+    }
+
+    .close-btn {
+      background: #ff4757;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: #ff3838;
+      transform: rotate(90deg);
+    }
+
+    /* فرم ویرایشگر */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e8ed;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e8ed;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    /* دکمه‌های اکشن */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-save:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-cancel {
+      background: #f1f3f5;
+      color: #555;
+    }
+
+    .btn-cancel:hover {
+      background: #e9ecef;
+    }
+
+    /* لیست آیتم‌ها */
+    .items-list {
+      margin-top: 25px;
+    }
+
+    .item-card {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .item-card:hover {
+      background: #e9ecef;
+      transform: translateX(-4px);
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-type {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #667eea;
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .item-content {
+      color: #333;
+      font-size: 14px;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .icon-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .icon-btn.edit {
+      color: #667eea;
+    }
+
+    .icon-btn.delete {
+      color: #ff4757;
+    }
+
+    /* پیام خالی بودن */
+    .empty-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+      font-size: 16px;
+    }
+
+    /* لودینگ */
+    .loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* پیام محدودیت */
+    .limit-warning {
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: #856404;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body><!-- دکمه شناور --> <button id="floatingBtn" aria-label="باز کردن ویرایشگر">✏️</button> <!-- پنل ویرایشگر -->
+  <div id="editorPanel" role="dialog" aria-labelledby="editorTitle">
+   <div class="editor-header">
+    <h2 class="editor-title" id="editorTitle">ویرایشگر محتوا</h2><button class="close-btn" id="closeBtn" aria-label="بستن">✕</button>
+   </div>
+   <div id="limitWarning" class="limit-warning" style="display: none;">
+    ⚠️ محدودیت ۹۹۹ آیتم به پایان رسیده است
+   </div>
+   <form id="editorForm">
+    <div class="form-group"><label for="contentType" class="form-label">نوع محتوا</label> <select id="contentType" class="form-select" required> <option value="text">متن</option> <option value="image">عکس (URL)</option> </select>
+    </div>
+    <div class="form-group"><label for="contentInput" class="form-label">محتوا</label> <textarea id="contentInput" class="form-textarea" placeholder="متن یا URL عکس را وارد کنید..." required></textarea>
+    </div>
+    <div class="action-buttons"><button type="submit" class="btn btn-save" id="saveBtn"> 💾 ذخیره </button> <button type="button" class="btn btn-cancel" id="cancelBtn"> ❌ لغو </button>
+    </div>
+   </form>
+   <div class="items-list" id="itemsList">
+    <div class="empty-message">
+     هنوز محتوایی ذخیره نشده است
+    </div>
+   </div>
+  </div>
+  <script>
+    // تنظیمات پیش‌فرض
+    const defaultConfig = {
+      button_label: "✏️",
+      primary_color: "#667eea",
+      secondary_color: "#f093fb",
+      text_color: "#333333"
+    };
+
+    let allItems = [];
+    let editingItemId = null;
+
+    // عناصر DOM
+    const floatingBtn = document.getElementById('floatingBtn');
+    const editorPanel = document.getElementById('editorPanel');
+    const closeBtn = document.getElementById('closeBtn');
+    const editorForm = document.getElementById('editorForm');
+    const contentType = document.getElementById('contentType');
+    const contentInput = document.getElementById('contentInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const itemsList = document.getElementById('itemsList');
+    const limitWarning = document.getElementById('limitWarning');
+
+    // باز و بسته کردن پنل
+    floatingBtn.addEventListener('click', () => {
+      editorPanel.classList.add('active');
+    });
+
+    closeBtn.addEventListener('click', closePanel);
+    cancelBtn.addEventListener('click', closePanel);
+
+    function closePanel() {
+      editorPanel.classList.remove('active');
+      resetForm();
+    }
+
+    function resetForm() {
+      editorForm.reset();
+      editingItemId = null;
+      saveBtn.innerHTML = '💾 ذخیره';
+    }
+
+    // ارسال فرم
+    editorForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const type = contentType.value;
+      const content = contentInput.value.trim();
+
+      if (!content) return;
+
+      // نمایش لودینگ
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="spinner"></span>';
+
+      if (editingItemId) {
+        // ویرایش آیتم موجود
+        const itemToUpdate = allItems.find(item => item.id === editingItemId);
+        if (itemToUpdate) {
+          itemToUpdate.type = type;
+          itemToUpdate.content = content;
+          itemToUpdate.timestamp = new Date().toISOString();
+
+          const result = await window.dataSdk.update(itemToUpdate);
+          
+          if (result.isError) {
+            alert('خطا در به‌روزرسانی! لطفاً دوباره تلاش کنید.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '💾 ذخیره';
+          }
+        }
+      } else {
+        // بررسی محدودیت
+        if (allItems.length >= 999) {
+          limitWarning.style.display = 'block';
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '💾 ذخیره';
+          return;
+        }
+
+        // ایجاد آیتم جدید
+        const newItem = {
+          id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+          type: type,
+          content: content,
+          timestamp: new Date().toISOString()
+        };
+
+        const result = await window.dataSdk.create(newItem);
+
+        if (result.isError) {
+          alert('خطا در ذخیره‌سازی! لطفاً دوباره تلاش کنید.');
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '💾 ذخیره';
+        }
+      }
+    });
+
+    // رندر لیست آیتم‌ها
+    function renderItems() {
+      if (allItems.length === 0) {
+        itemsList.innerHTML = '<div class="empty-message">هنوز محتوایی ذخیره نشده است</div>';
+        return;
+      }
+
+      itemsList.innerHTML = allItems.map(item => `
+        <div class="item-card" data-id="${item.id}">
+          <div class="item-info">
+            <span class="item-type">${item.type === 'text' ? '📝 متن' : '🖼️ عکس'}</span>
+            <p class="item-content">${item.content}</p>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn edit" onclick="editItem('${item.id}')" aria-label="ویرایش">✏️</button>
+            <button class="icon-btn delete" onclick="deleteItem('${item.id}')" aria-label="حذف">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ویرایش آیتم
+    window.editItem = function(id) {
+      const item = allItems.find(i => i.id === id);
+      if (item) {
+        editingItemId = id;
+        contentType.value = item.type;
+        contentInput.value = item.content;
+        saveBtn.innerHTML = '✅ به‌روزرسانی';
+        contentInput.focus();
+      }
+    };
+
+    // حذف آیتم
+    window.deleteItem = async function(id) {
+      const itemToDelete = allItems.find(item => item.id === id);
+      if (!itemToDelete) return;
+
+      // نمایش تأیید با دکمه موقت
+      const card = document.querySelector(`[data-id="${id}"]`);
+      const originalHTML = card.innerHTML;
+      
+      card.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+          <span style="flex: 1; color: #ff4757; font-weight: 600;">حذف شود؟</span>
+          <button class="btn" style="padding: 8px 16px;" onclick="confirmDelete('${id}')">بله</button>
+          <button class="btn btn-cancel" style="padding: 8px 16px;" onclick="cancelDelete('${id}', \`${originalHTML.replace(/`/g, '\\`')}\`)">خیر</button>
+        </div>
+      `;
+    };
+
+    window.confirmDelete = async function(id) {
+      const itemToDelete = allItems.find(item => item.id === id);
+      if (!itemToDelete) return;
+
+      const result = await window.dataSdk.delete(itemToDelete);
+
+      if (result.isError) {
+        alert('خطا در حذف! لطفاً دوباره تلاش کنید.');
+      }
+    };
+
+    window.cancelDelete = function(id, originalHTML) {
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        card.innerHTML = originalHTML;
+      }
+    };
+
+    // Data SDK Handler
+    const dataHandler = {
+      onDataChanged(data) {
+        allItems = data;
+        renderItems();
+        
+        // مخفی کردن هشدار محدودیت
+        if (allItems.length < 999) {
+          limitWarning.style.display = 'none';
+        }
+
+        // ریست کردن فرم بعد از ذخیره موفق
+        if (saveBtn.disabled) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '💾 ذخیره';
+          resetForm();
+        }
+      }
+    };
+
+    // Element SDK Functions
+    async function onConfigChange(config) {
+      const buttonLabel = config.button_label || defaultConfig.button_label;
+      floatingBtn.innerHTML = buttonLabel;
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["button_label", config.button_label || defaultConfig.button_label]
+      ]);
+    }
+
+    // راه‌اندازی SDK ها
+    (async function init() {
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities,
+          mapToEditPanelValues
+        });
+      }
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (result.isError) {
+          console.error('خطا در راه‌اندازی Data SDK');
+        }
+      }
+    })();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a556d42c325e0fe',t:'MTc2NDI4NjM2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
